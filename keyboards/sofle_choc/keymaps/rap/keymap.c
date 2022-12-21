@@ -16,50 +16,9 @@
 #include QMK_KEYBOARD_H
 #include "keymap-rap.c"
 
-enum sofle_layers {
-    _QWERTZ,
-};
+enum sofle_layers { _QWERTY, _NEOLV1, _NEOLV2 };
 
-enum custom_keycodes { KC_LOWER = SAFE_RANGE, KC_RAISE, KC_ADJUST, KC_PRVWD, KC_NXTWD, KC_LSTRT, KC_LEND, KC_DLINE };
-
-bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-    switch (keycode) {
-        case KC_CAPS:
-            if (record->event.pressed) {
-                oled_write_P(PSTR("LV 1 "), false);
-                break;
-            } else {
-                oled_write_P(PSTR("     "), false);
-                oled_write_P(PSTR("     "), false);
-                break;
-            }
-            return false;
-        case KC_RALT:
-            if (record->event.pressed) {
-                oled_write_P(PSTR("LV 2 "), false);
-                oled_write_P(PSTR("     "), false);
-                break;
-            } else {
-                oled_write_P(PSTR("     "), false);
-                oled_write_P(PSTR("     "), false);
-                break;
-            }
-            return false;
-        case KC_LCTL:
-            if (record->event.pressed) {
-                oled_write_P(PSTR("CRTL "), false);
-                break;
-            } else {
-                oled_write_P(PSTR("     "), false);
-                oled_write_P(PSTR("     "), false);
-                break;
-            }
-            return false;
-    }
-    return true;
-}
-
-#ifdef OLED_ENABLE
+// #ifdef OLED_ENABLE
 
 static void render_logo(void) {
     static const char PROGMEM raw_logo[] = {
@@ -76,7 +35,35 @@ void write_int_ln(const char* prefix, uint8_t value) {
 }
 
 static void print_status_narrow(void) {
-    oled_write_ln_P(PSTR("SofleChoc _____\nRAPSN\n\n\n\n\n\n\n\n"), false);
+    oled_write_ln_P(PSTR("SofleChoc _____"), false);
+
+    // Print WPM stats
+    int current_wpm = get_current_wpm();
+    oled_write_ln_P(PSTR("WPM  "), false);
+    oled_write(get_u8_str(current_wpm, ' '), false);
+
+    oled_write_P(PSTR("\n\n\n\n\n\n\n"), false);
+    led_t led_usb_state = host_keyboard_led_state();
+    if (led_usb_state.caps_lock) {
+        oled_write_ln_P(PSTR(" CAP "), true);
+    } else {
+        oled_write_ln_P(PSTR("     "), false);
+    }
+
+    // Print current layer
+    switch (get_highest_layer(layer_state)) {
+        case _QWERTY:
+            oled_write_P(PSTR("Main "), false);
+            break;
+        case _NEOLV1:
+            oled_write_P(PSTR("LVL 1"), false);
+            break;
+        case _NEOLV2:
+            oled_write_P(PSTR("LVL 2"), false);
+            break;
+        default:
+            oled_write_P(PSTR("???  "), false);
+    }
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
@@ -89,7 +76,8 @@ bool oled_task_user(void) {
     } else {
         render_logo();
     }
+
     return false;
 }
 
-#endif
+// #endif
