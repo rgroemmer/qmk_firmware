@@ -465,3 +465,12 @@ pytest:
 .PHONY: format-and-pytest
 format-and-pytest:
 	RUNTIME=docker ./util/docker_cmd.sh bash -lic "$(CONTAINER_PREAMBLE); qmk format-c --core-only -a && qmk format-python -a && qmk pytest"
+
+# RAPSN flash
+.PHONY: rapsn
+rapsn:
+        RUNTIME=podman ./util/docker_build.sh crkbd:rapsn:flash
+
+.PHONY: rapsn-led
+rapsn-led:
+        RUNTIME=podman ./util/docker_build.sh crkbd:rapsn-led:flash
